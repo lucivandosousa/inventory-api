@@ -1,13 +1,43 @@
 const express = require('express')
 const { PrismaClient } = require('@prisma/client')
 const cors = require('cors')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const prisma = new PrismaClient()
 const app = express()
 const PORT = process.env.PORT || 9999
+const JWT_SECRET = 'jwt_secret_inventory'
 
 app.use(express.json())
 app.use(cors())
+
+app.post('/register', async (req, res) => {
+  const { email, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10)
+  try {
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+      }
+    })
+    res.status(201).json(user)
+  } catch (error) {
+    res.status(400).json({ error: 'Email já registrado' })
+  }
+})
+
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body
+  const user = await prisma.user.findUnique({ where: { email } })
+  if (user && await bcrypt.compare(password, user.password)) {
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' })
+    res.json({ token })
+  } else {
+    res.status(401).json({ error: 'Email ou senha incorretos' })
+  }
+})
 
 app.post('/items', async (req, res) => {
   const { name, description, quantity, category, image } = req.body

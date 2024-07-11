@@ -25,3 +25,11 @@ model Item {
 
   @@map("items")
 }
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+
+  @@map("users")
+}
