@@ -1,4 +1,4 @@
-# API de invetário
+# API de inventário
 
 Esta é uma simples API construída usando o framework Express.js para Node.js e Prisma com persistência em um banco relacional SQLite.
 
